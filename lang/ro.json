@@ -1,0 +1,35 @@
+{
+  "RNK_HEADER": {
+    "Title": "RNK Header",
+    "Settings": {
+      "SlotConfiguration": "Slot Configuration",
+      "PlayerVisibility": "Player Visibility",
+      "GMHub": "GM Hub"
+    },
+    "Slots": {
+      "MainSlot": "Main Slot",
+      "SubSlot": "Sub Slot",
+      "Empty": "Empty Slot",
+      "Assign": "Assign Button",
+      "Unassign": "Unassign",
+      "MoveToSlot": "Move to Slot"
+    },
+    "Permissions": {
+      "VisibleTo": "Visible To",
+      "AllPlayers": "All Players",
+      "SelectedPlayers": "Selected Players",
+      "GMOnly": "GM Only"
+    },
+    "Buttons": {
+      "Configure": "Configure",
+      "Save": "Save Configuration",
+      "Reset": "Reset to Default",
+      "Cancel": "Cancel"
+    },
+    "Messages": {
+      "ConfigSaved": "Configuration saved successfully",
+      "NoModulesDetected": "No module buttons detected",
+      "InvalidSlot": "Invalid slot selection"
+    }
+  }
+}

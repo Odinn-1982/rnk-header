@@ -1,0 +1,69 @@
+{
+  "id": "rnk-header",
+  "title": "RNK Header",
+  "description": "Customizable window header module with slot-based button management and per-player visibility controls.",
+  "version": "1.0.0",
+  "authors": [
+    {
+      "name": "RNK",
+      "flags": {}
+    }
+  ],
+  "compatibility": {
+    "minimum": "12",
+    "verified": "13"
+  },
+  "esmodules": [
+    "scripts/rnk-header.js"
+  ],
+  "styles": [
+    "styles/rnk-header.css"
+  ],
+  "languages": [
+    { "lang": "en", "name": "English", "path": "lang/en.json" },
+    { "lang": "fr", "name": "Français", "path": "lang/fr.json" },
+    { "lang": "de", "name": "Deutsch", "path": "lang/de.json" },
+    { "lang": "es", "name": "Español", "path": "lang/es.json" },
+    { "lang": "it", "name": "Italiano", "path": "lang/it.json" },
+    { "lang": "pt", "name": "Português", "path": "lang/pt.json" },
+    { "lang": "pt-BR", "name": "Português (Brasil)", "path": "lang/pt-BR.json" },
+    { "lang": "ja", "name": "日本語", "path": "lang/ja.json" },
+    { "lang": "ko", "name": "한국어", "path": "lang/ko.json" },
+    { "lang": "zh-CN", "name": "中文 (简体)", "path": "lang/zh-CN.json" },
+    { "lang": "zh-TW", "name": "中文 (繁體)", "path": "lang/zh-TW.json" },
+    { "lang": "ru", "name": "Русский", "path": "lang/ru.json" },
+    { "lang": "pl", "name": "Polski", "path": "lang/pl.json" },
+    { "lang": "nl", "name": "Nederlands", "path": "lang/nl.json" },
+    { "lang": "sv", "name": "Svenska", "path": "lang/sv.json" },
+    { "lang": "da", "name": "Dansk", "path": "lang/da.json" },
+    { "lang": "no", "name": "Norsk", "path": "lang/no.json" },
+    { "lang": "fi", "name": "Suomi", "path": "lang/fi.json" },
+    { "lang": "tr", "name": "Türkçe", "path": "lang/tr.json" },
+    { "lang": "el", "name": "Ελληνικά", "path": "lang/el.json" },
+    { "lang": "cs", "name": "Čeština", "path": "lang/cs.json" },
+    { "lang": "hu", "name": "Magyar", "path": "lang/hu.json" },
+    { "lang": "ro", "name": "Română", "path": "lang/ro.json" },
+    { "lang": "th", "name": "ไทย", "path": "lang/th.json" },
+    { "lang": "vi", "name": "Tiếng Việt", "path": "lang/vi.json" },
+    { "lang": "id", "name": "Bahasa Indonesia", "path": "lang/id.json" },
+    { "lang": "hi", "name": "हिन्दी", "path": "lang/hi.json" },
+    { "lang": "ar", "name": "العربية", "path": "lang/ar.json" },
+    { "lang": "he", "name": "עברית", "path": "lang/he.json" },
+    { "lang": "uk", "name": "Українська", "path": "lang/uk.json" },
+    { "lang": "sk", "name": "Slovenčina", "path": "lang/sk.json" },
+    { "lang": "bg", "name": "Български", "path": "lang/bg.json" },
+    { "lang": "hr", "name": "Hrvatski", "path": "lang/hr.json" },
+    { "lang": "sr", "name": "Српски", "path": "lang/sr.json" },
+    { "lang": "sl", "name": "Slovenščina", "path": "lang/sl.json" },
+    { "lang": "et", "name": "Eesti", "path": "lang/et.json" },
+    { "lang": "lv", "name": "Latviešu", "path": "lang/lv.json" },
+    { "lang": "lt", "name": "Lietuvių", "path": "lang/lt.json" }
+  ],
+  "url": "https://github.com/Odinn-1982/rnk-header",
+  "manifest": "https://github.com/Odinn-1982/rnk-header/releases/latest/download/module.json",
+  "download": "https://github.com/Odinn-1982/rnk-header/releases/download/v1.0.0/rnk-header-1.0.0.zip",
+  "license": "LICENSE",
+  "readme": "README.md",
+  "bugs": "https://github.com/Odinn-1982/rnk-header/issues",
+  "changelog": "https://github.com/Odinn-1982/rnk-header/releases"
+}

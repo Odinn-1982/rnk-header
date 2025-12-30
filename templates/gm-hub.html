@@ -1,0 +1,137 @@
+<div class="rnk-gm-hub {{#if psychedelic}}rnk-psychedelic{{/if}}">
+  <div class="rnk-gm-hub-header">
+    <img src="modules/rnk-header/codex-2.jpg" alt="RNK" class="rnk-logo" />
+    <h2>RNK Header Configuration</h2>
+    <a class="rnk-header-button rnk-close-button"><i class="fas fa-times"></i></a>
+  </div>
+  
+  <nav class="rnk-nav-tabs" data-group="primary-tabs">
+    <a class="item" data-tab="slots">
+      <i class="fas fa-th"></i> Slot Configuration
+    </a>
+    <a class="item" data-tab="permissions">
+      <i class="fas fa-user-lock"></i> Permissions
+    </a>
+  </nav>
+
+  <section class="rnk-content">
+    <div class="tab" data-tab="slots">
+      <div class="rnk-gm-hub-section">
+        <h3>Slot Assignments</h3>
+        <p class="rnk-hint">Assign buttons to main slots and sub-slots. Main slots with sub-slots will display as dropdowns.</p>
+        
+        <div class="rnk-slot-grid">
+          {{#each slots}}
+            <div class="rnk-slot-card {{#if this.hidden}}rnk-slot-hidden{{/if}}">
+              <div class="rnk-card-header">
+                <i class="fas fa-th-large"></i>
+                <span>Main Slot {{add @index 1}}</span>
+                <label class="rnk-slot-hide-toggle" title="Hide this slot globally">
+                  <input type="checkbox" class="slot-hide-toggle" data-slot-id="{{this.id}}" {{#if this.hidden}}checked{{/if}}>
+                  <i class="fas fa-eye-slash"></i>
+                </label>
+              </div>
+              
+              <div class="rnk-main-slot-select">
+                <select class="slot-assignment" data-slot-id="{{this.id}}">
+                  <option value="none" {{#unless this.button}}selected{{/unless}}>Empty</option>
+                  {{#each ../availableButtons}}
+                    <option value="{{this.id}}" {{#if (eq this.id ../button.id)}}selected{{/if}}>
+                      {{this.label}}
+                    </option>
+                  {{/each}}
+                </select>
+              </div>
+
+              <div class="rnk-slot-image-config">
+                <div class="rnk-input-group">
+                  <div class="rnk-image-preview">
+                    {{#if this.button.image}}
+                      <img src="{{this.button.image}}" />
+                    {{else}}
+                      <i class="fas fa-image"></i>
+                    {{/if}}
+                  </div>
+                  <input type="text" class="slot-image-path" data-slot-id="{{this.id}}" value="{{this.button.image}}" placeholder="Custom Image URL (optional)" />
+                  <button type="button" class="rnk-file-picker" data-slot-id="{{this.id}}" title="Browse Files">
+                    <i class="fas fa-file-import"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="rnk-sub-slots-grid">
+                {{#each this.subSlots}}
+                  <div class="rnk-sub-slot-container">
+                    <div class="rnk-sub-slot-item">
+                      <label title="Sub {{add @../index 1}}.{{add @index 1}}">{{add @index 1}}</label>
+                      <select class="slot-assignment" data-slot-id="{{this.id}}">
+                        <option value="none" {{#unless this.button}}selected{{/unless}}>Empty</option>
+                        {{#each ../../availableButtons}}
+                          <option value="{{this.id}}" {{#if (eq this.id ../button.id)}}selected{{/if}}>
+                            {{this.label}}
+                          </option>
+                        {{/each}}
+                      </select>
+                    </div>
+                    <div class="rnk-sub-slot-image">
+                      <input type="text" class="slot-image-path" data-slot-id="{{this.id}}" value="{{this.button.image}}" placeholder="Img..." />
+                      <button type="button" class="rnk-file-picker" data-slot-id="{{this.id}}" title="Browse">
+                        <i class="fas fa-file-import"></i>
+                      </button>
+                    </div>
+                  </div>
+                {{/each}}
+              </div>
+            </div>
+          {{/each}}
+        </div>
+      </div>
+
+      <div class="rnk-form-group">
+        <button type="button" class="reset-config">
+          <i class="fas fa-undo"></i> Reset to Defaults
+        </button>
+        <button type="button" class="save-config">
+          <i class="fas fa-save"></i> Save Configuration
+        </button>
+      </div>
+    </div>
+
+    <div class="tab" data-tab="permissions">
+      <div class="rnk-gm-hub-section">
+        <h3>Player Slot Visibility</h3>
+        <p class="rnk-hint">Control which slots each player can see.</p>
+        
+        <div class="rnk-permissions-grid">
+          {{#each users}}
+            <div class="rnk-player-card">
+              <div class="rnk-player-info">
+                <img src="{{this.avatar}}" alt="{{this.name}}" class="rnk-player-avatar" />
+                <span class="rnk-player-name">{{this.name}}</span>
+              </div>
+              
+              <div class="rnk-slot-toggles">
+                {{#each ../slots}}
+                  <label class="rnk-slot-checkbox" title="Slot {{add @index 1}}{{#if this.button}} - {{this.button.label}}{{/if}}">
+                    <input type="checkbox" 
+                           class="slot-visibility-toggle" 
+                           data-user-id="{{../this.id}}" 
+                           data-slot-index="{{@index}}"
+                           {{#unless (lookup (lookup ../../slotVisibility ../this.id) @index)}}checked{{/unless}}>
+                    <span>{{add @index 1}}</span>
+                  </label>
+                {{/each}}
+              </div>
+            </div>
+          {{/each}}
+        </div>
+      </div>
+
+      <div class="rnk-form-group">
+        <button type="button" class="save-config">
+          <i class="fas fa-save"></i> Save Permissions
+        </button>
+      </div>
+    </div>
+  </section>
+</div>
