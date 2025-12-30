@@ -2,7 +2,7 @@
   "id": "rnk-header",
   "title": "RNK Header",
   "description": "Customizable window header module with slot-based button management and per-player visibility controls.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "authors": [
     {
       "name": "RNK",
@@ -60,8 +60,8 @@
     { "lang": "lt", "name": "Lietuvių", "path": "lang/lt.json" }
   ],
   "url": "https://github.com/Odinn-1982/rnk-header",
-  "manifest": "https://github.com/Odinn-1982/rnk-header/releases/latest/download/module.json",
-  "download": "https://github.com/Odinn-1982/rnk-header/releases/download/v1.0.0/rnk-header-1.0.0.zip",
+  "manifest": "https://raw.githubusercontent.com/Odinn-1982/rnk-header/master/module.json",
+  "download": "https://github.com/Odinn-1982/rnk-header/releases/download/v1.0.1/rnk-header-1.0.1.zip",
   "license": "LICENSE",
   "readme": "README.md",
   "bugs": "https://github.com/Odinn-1982/rnk-header/issues",

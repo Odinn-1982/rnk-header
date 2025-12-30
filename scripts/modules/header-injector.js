@@ -13,49 +13,27 @@ export class HeaderInjector {
       return;
     }
     
+    if (!html.jquery) {
+      html = $(html);
+    }
+    const isSceneControls = app.constructor?.name === 'SceneControls' || html.hasClass('scene-controls') || app?.id === 'sceneControls';
+    if (isSceneControls) {
+      return;
+    }
+
     // Skip the RNK GM Hub itself
     if (app.id === 'rnk-gm-hub' || app.options?.id === 'rnk-gm-hub' || app.constructor.name === 'GMHub') {
       console.log('RNK Header | Skipping GM Hub injection');
       return;
     }
-    
-    // Ensure html is a jQuery object
-    if (!html.jquery) {
-      html = $(html);
+
+    const maybeWindow = app.element?.length ? (app.element.jquery ? app.element : $(app.element)) : html.closest('.app.window-app, .window-app, .app');
+    if (!maybeWindow.length) {
+      return;
     }
-    
-    // Try multiple approaches to find the header
-    let header;
-    
-    // Approach 1: Look in app.element (for popOut windows)
-    if (app.element?.length) {
-      const element = app.element.jquery ? app.element : $(app.element);
-      header = element.find('.window-header');
-      console.log('RNK Header | Approach 1 (app.element):', header.length, 'headers found');
-    }
-    
-    // Approach 2: Look in provided html
-    if (!header || !header.length) {
-      header = html.find('.window-header');
-      console.log('RNK Header | Approach 2 (html.find):', header.length, 'headers found');
-    }
-    
-    // Approach 3: Check if html IS the header
-    if (!header || !header.length) {
-      if (html.hasClass('window-header')) {
-        header = html;
-        console.log('RNK Header | Approach 3 (html is header):', header.length);
-      }
-    }
-    
-    // Approach 4: Look in parent
-    if (!header || !header.length) {
-      header = html.closest('.app').find('.window-header');
-      console.log('RNK Header | Approach 4 (closest .app):', header.length, 'headers found');
-    }
-    
-    if (!header || !header.length) {
-      console.warn('RNK Header | No header found in:', app.constructor.name, 'popOut:', app.popOut, 'html:', html.prop('tagName'), html.attr('class'));
+
+    const header = maybeWindow.find('.window-header');
+    if (!header.length) {
       return;
     }
 

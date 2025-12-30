@@ -39,49 +39,64 @@ export class GMHub extends FormApplication {
 
   static addSceneControl(controls) {
     try {
-      if (!game?.user?.isGM) return;
+      if (!game?.user?.isGM) return controls;
 
-      controls['rnk-header'] = {
+      const tool = {
+        name: 'configure',
+        title: 'Open Configuration',
+        icon: 'fas fa-cog',
+        button: true,
+        visible: true,
+        onClick: () => GMHub.openGMHub(),
+        onChange: () => GMHub.openGMHub()
+      };
+
+      const controlConfig = {
         name: 'rnk-header',
         title: 'RNK Header',
         icon: 'fas fa-sliders-h',
         visible: true,
-        layer: 'controls',
-        tools: {
-          configure: {
-            name: 'configure',
-            title: 'Open Configuration',
-            icon: 'fas fa-cog',
-            button: true,
-            visible: true,
-            onClick: () => {
-              try {
-                console.log('RNK Header | Button clicked');
-                const header = window.RNKHeader;
-                if (!header) {
-                  console.error('RNK Header | window.RNKHeader not found');
-                  return;
-                }
-                
-                if (!header.gmHub) {
-                  console.log('RNK Header | Creating new GMHub instance...');
-                  header.gmHub = new GMHub(header.slotManager, header.moduleDetector, header.permissionManager);
-                }
-                
-                console.log('RNK Header | Rendering GMHub...');
-                header.gmHub.render(true, { focus: true });
-              } catch (error) {
-                console.error('RNK Header | Error opening GMHub:', error);
-                ui.notifications.error('Failed to open RNK Header configuration');
-              }
-            }
-          }
-        },
-        activeTool: 'configure'
+        layer: 'controls'
       };
+
+      const hubIsOpen = !!window.RNKHeader?.gmHub?.rendered;
+      if (hubIsOpen) {
+        controlConfig.activeTool = 'configure';
+      }
+
+      if (Array.isArray(controls)) {
+        controlConfig.tools = [tool];
+        controls.push(controlConfig);
+      } else {
+        controlConfig.tools = { configure: tool };
+        controls['rnk-header'] = controlConfig;
+      }
+
       console.log('RNK Header | Scene control added');
     } catch (error) {
       console.error('RNK Header | Error in addSceneControl:', error);
+    }
+    return controls;
+  }
+
+  static openGMHub() {
+    try {
+      const header = window.RNKHeader;
+      if (!header) {
+        console.error('RNK Header | window.RNKHeader not found');
+        return;
+      }
+
+      if (!header.gmHub) {
+        console.log('RNK Header | Creating new GMHub instance...');
+        header.gmHub = new GMHub(header.slotManager, header.moduleDetector, header.permissionManager);
+      }
+
+      console.log('RNK Header | Rendering GMHub...');
+      header.gmHub.render(true, { focus: true });
+    } catch (error) {
+      console.error('RNK Header | Error opening GMHub:', error);
+      ui.notifications.error('Failed to open RNK Header configuration');
     }
   }
 
@@ -245,3 +260,4 @@ export class GMHub extends FormApplication {
     return super.close(options);
   }
 }
+

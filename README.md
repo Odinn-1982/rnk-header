@@ -167,6 +167,12 @@ RNK. All rights reserved.
 
 ## Changelog
 
+### Version 1.0.1
+
+- Add V2 application support for the custom header injection and scene-control toolbar integration (ensures the header and GM Hub button work consistently in Foundry 13+).
+- Prevent button auto-activation on scene-control re-renders (token drops, layer swaps) while keeping the hub easily accessible.
+- Keep the GM Hub scene-control handler stable, add missing `onChange`, and package the module for the 1.0.1 release.
+
 ### Version 1.0.0
 
 - Initial release
