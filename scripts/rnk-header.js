@@ -120,6 +120,7 @@ class RNKHeader {
     
     // V2 Application hooks (v13+)
     Hooks.on('renderApplicationV2', this.headerInjector.onRenderApplication.bind(this.headerInjector));
+    Hooks.on('renderActorSheetV2', this.headerInjector.onRenderApplication.bind(this.headerInjector));
     
     // Catch-all for ANY window render
     Hooks.on('render', (app, html, data) => {

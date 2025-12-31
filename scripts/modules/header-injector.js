@@ -6,18 +6,26 @@ export class HeaderInjector {
   }
 
   async onRenderApplication(app, html, data) {
-    console.log('RNK Header | Hook fired for:', app.constructor.name);
+    console.log('RNK Header | Hook fired for:', app.constructor.name, 'Actor:', app.actor?.name || app.object?.name || 'N/A');
     
     if (!game.user) {
       console.log('RNK Header | No game.user, skipping');
       return;
     }
     
+    // For v2 apps, html might be the app itself, not a jQuery object
+    if (!html) {
+      console.log('RNK Header | No html passed to render hook');
+      return;
+    }
+    
     if (!html.jquery) {
       html = $(html);
     }
+    
     const isSceneControls = app.constructor?.name === 'SceneControls' || html.hasClass('scene-controls') || app?.id === 'sceneControls';
     if (isSceneControls) {
+      console.log('RNK Header | Skipping scene controls');
       return;
     }
 
@@ -27,33 +35,60 @@ export class HeaderInjector {
       return;
     }
 
-    const maybeWindow = app.element?.length ? (app.element.jquery ? app.element : $(app.element)) : html.closest('.app.window-app, .window-app, .app');
-    if (!maybeWindow.length) {
+    // Get the actor - try multiple paths
+    const actor = app.actor || app.object || app.document;
+    
+    // Skip if not an actor sheet
+    if (!actor) {
+      console.log('RNK Header | No actor, skipping for:', app.constructor.name);
       return;
     }
 
-    const header = maybeWindow.find('.window-header');
-    if (!header.length) {
+    // For players: only show on their own character sheet
+    if (!game.user.isGM) {
+      // Must be a character (not NPC)
+      if (actor.type !== 'character') {
+        console.log('RNK Header | Player: Not a character sheet, skipping for:', app.constructor.name);
+        return;
+      }
+      // Must own the actor
+      if (!actor.ownership || !actor.ownership[game.user.id]) {
+        console.log('RNK Header | Player: does not own this actor, skipping');
+        return;
+      }
+    } else {
+      // For GM: show on all actor sheets (character AND NPC)
+      // No type filtering - show on everything
+    }
+
+    // Find the window header - try multiple selectors
+    let header = null;
+    const maybeWindow = app.element?.length ? (app.element.jquery ? app.element : $(app.element)) : html.closest('.app.window-app, .window-app, .app, [role="dialog"]');
+    
+    if (maybeWindow.length) {
+      header = maybeWindow.find('.window-header');
+    }
+    
+    if (!header || !header.length) {
+      console.log('RNK Header | Could not find header element for:', app.constructor.name);
       return;
     }
 
-    console.log('RNK Header | SUCCESS! Injecting into:', app.constructor.name, 'with', this.slotManager.MAIN_SLOTS, 'slots');
+    console.log('RNK Header | SUCCESS! Injecting into:', app.constructor.name, 'Actor:', actor.name, 'with', this.slotManager.MAIN_SLOTS, 'slots');
     await this.injectCustomHeader(app, header);
   }
 
   async injectCustomHeader(app, header) {
-    // Hide existing controls
-    const existingControls = header.find('.window-title, .header-button, [data-action]');
-    existingControls.css('display', 'none');
-
     // Remove any existing RNK header
     header.find('.rnk-custom-header').remove();
 
     const rnkHeader = $('<div class="rnk-custom-header"></div>');
+    const slotsContainer = $('<div style="display: flex; align-items: center; gap: 8px;"></div>');
     
-    // Add a permanent close button at the start of the custom header (left side of slots)
+    // Add a permanent close button variable
+    let closeButton = null;
     if (game.settings.get('rnk-header', 'showCloseButton')) {
-      const closeButton = $(`
+      closeButton = $(`
         <a class="rnk-header-button rnk-close-button" title="Close Window">
           <i class="fas fa-times"></i>
         </a>
@@ -63,7 +98,6 @@ export class HeaderInjector {
         event.stopPropagation();
         app.close();
       });
-      rnkHeader.append(closeButton);
     }
 
     // Create main slot elements
@@ -79,12 +113,27 @@ export class HeaderInjector {
       }
 
       const mainSlotElement = this.createMainSlotElement(app, mainSlot, i);
-      rnkHeader.append(mainSlotElement);
+      slotsContainer.append(mainSlotElement);
     }
 
-    console.log('RNK Header | Injected', rnkHeader.children().length, 'slots');
+    // Append slots container and close button to main header
+    rnkHeader.append(slotsContainer);
+    if (closeButton) {
+      rnkHeader.append(closeButton);
+    }
 
-    header.append(rnkHeader);
+    console.log('RNK Header | Injected', slotsContainer.children().length, 'slots');
+
+    // For v13+ ApplicationV2, inject into header-elements if it exists
+    const headerElements = header.find('.header-elements');
+    if (headerElements.length) {
+      headerElements.append(rnkHeader);
+      console.log('RNK Header | Injected into .header-elements');
+    } else {
+      // Fallback for v1 applications
+      header.append(rnkHeader);
+      console.log('RNK Header | Injected directly into header');
+    }
   }
 
   createMainSlotElement(app, mainSlot, index) {
