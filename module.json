@@ -2,7 +2,7 @@
   "id": "rnk-header",
   "title": "RNK Header",
   "description": "Customizable window header module with slot-based button management and per-player visibility controls.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "authors": [
     {
       "name": "RNK",

@@ -46,13 +46,8 @@ export class HeaderInjector {
 
     // For players: only show on their own character sheet
     if (!game.user.isGM) {
-      // Must be a character (not NPC)
-      if (actor.type !== 'character') {
-        console.log('RNK Header | Player: Not a character sheet, skipping for:', app.constructor.name);
-        return;
-      }
-      // Must own the actor
-      if (!actor.ownership || !actor.ownership[game.user.id]) {
+      // Must own the actor (System Agnostic: relies on ownership, not actor.type)
+      if (!actor.isOwner) {
         console.log('RNK Header | Player: does not own this actor, skipping');
         return;
       }
