@@ -84,17 +84,17 @@ export class ModuleDetector {
 
   addSidebarTabs() {
     const sidebarTabs = [
-      { id: 'chat', label: 'Chat', icon: 'fas fa-comments', callback: () => ui.chat.renderPopout() },
-      { id: 'combat', label: 'Combat Tracker', icon: 'fas fa-fist-raised', callback: () => ui.combat.renderPopout() },
-      { id: 'scenes', label: 'Scenes', icon: 'fas fa-map', callback: () => ui.scenes.renderPopout() },
-      { id: 'actors', label: 'Actors', icon: 'fas fa-users', callback: () => ui.actors.renderPopout() },
-      { id: 'items', label: 'Items', icon: 'fas fa-suitcase', callback: () => ui.items.renderPopout() },
-      { id: 'journal', label: 'Journal Entries', icon: 'fas fa-book-open', callback: () => ui.journal.renderPopout() },
-      { id: 'tables', label: 'Rollable Tables', icon: 'fas fa-th-list', callback: () => ui.tables.renderPopout() },
-      { id: 'cards', label: 'Card Decks', icon: 'fas fa-cards', callback: () => ui.cards.renderPopout() },
-      { id: 'playlists', label: 'Playlists', icon: 'fas fa-music', callback: () => ui.playlists.renderPopout() },
-      { id: 'compendium', label: 'Compendium Packs', icon: 'fas fa-atlas', callback: () => ui.compendium.renderPopout() },
-      { id: 'settings', label: 'Game Settings', icon: 'fas fa-cogs', callback: () => game.settings.sheet.render(true) }
+      { id: 'chat', label: 'Chat', icon: 'fas fa-comments', callback: () => ui.chat?.renderPopout() },
+      { id: 'combat', label: 'Combat Tracker', icon: 'fas fa-fist-raised', callback: () => ui.combat?.renderPopout() },
+      { id: 'scenes', label: 'Scenes', icon: 'fas fa-map', callback: () => ui.scenes?.renderPopout() },
+      { id: 'actors', label: 'Actors', icon: 'fas fa-users', callback: () => ui.actors?.renderPopout() },
+      { id: 'items', label: 'Items', icon: 'fas fa-suitcase', callback: () => ui.items?.renderPopout() },
+      { id: 'journal', label: 'Journal Entries', icon: 'fas fa-book-open', callback: () => ui.journal?.renderPopout() },
+      { id: 'tables', label: 'Rollable Tables', icon: 'fas fa-th-list', callback: () => ui.tables?.renderPopout() },
+      { id: 'cards', label: 'Card Decks', icon: 'fas fa-cards', callback: () => ui.cards?.renderPopout() },
+      { id: 'playlists', label: 'Playlists', icon: 'fas fa-music', callback: () => ui.playlists?.renderPopout() },
+      { id: 'compendium', label: 'Compendium Packs', icon: 'fas fa-atlas', callback: () => ui.compendium?.renderPopout() },
+      { id: 'settings', label: 'Game Settings', icon: 'fas fa-cogs', callback: () => game.settings?.sheet?.render(true) }
     ];
 
     for (const tab of sidebarTabs) {

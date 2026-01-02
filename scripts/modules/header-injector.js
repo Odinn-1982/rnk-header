@@ -290,20 +290,20 @@ export class HeaderInjector {
 
     switch (button.action) {
       case 'close':
-        app.close();
+        if (typeof app.close === 'function') app.close();
         break;
       case 'minimize':
-        app.minimize();
+        if (typeof app.minimize === 'function') app.minimize();
         break;
       case 'configure':
         if (app.sheet) {
-          app.object.sheet.render(true);
+          app.object?.sheet?.render(true);
         }
         break;
       case 'token':
         if (app.object?.getActiveTokens) {
           const tokens = app.object.getActiveTokens();
-          if (tokens.length > 0) {
+          if (tokens && tokens.length > 0) {
             tokens[0].control();
           }
         }
@@ -321,64 +321,83 @@ export class HeaderInjector {
         }
 
         // 1. Standard API patterns
-        if (typeof mod.open === 'function') { mod.open(); return; }
-        if (mod.api?.open) { mod.api.open(); return; }
-        if (mod.api?.render) { mod.api.render(true); return; }
-        if (mod.public?.open) { mod.public.open(); return; }
-        if (mod.public?.render) { mod.public.render(true); return; }
+        try {
+          if (typeof mod.open === 'function') { mod.open(); return; }
+          if (mod.api?.open) { mod.api.open(); return; }
+          if (mod.api?.render) { mod.api.render(true); return; }
+          if (mod.public?.open) { mod.public.open(); return; }
+          if (mod.public?.render) { mod.public.render(true); return; }
+        } catch (e) { console.warn('RNK Header | Error in standard API open:', e); }
         
         // 2. Sheet pattern
-        if (mod.sheet) { mod.sheet.render(true); return; }
+        try {
+          if (mod.sheet) { mod.sheet.render(true); return; }
+        } catch (e) { console.warn('RNK Header | Error opening module sheet:', e); }
         
         // 3. Apps array pattern
-        if (mod.apps?.[0]?.render) { mod.apps[0].render(true); return; }
+        try {
+          if (mod.apps?.[0]?.render) { mod.apps[0].render(true); return; }
+        } catch (e) { console.warn('RNK Header | Error opening module app:', e); }
 
         // 4. Global Object Pattern (ID or Title)
         const globalName = button.moduleId;
         const globalObj = window[globalName] || window[globalName.charAt(0).toUpperCase() + globalName.slice(1)];
-        if (globalObj?.render) { globalObj.render(true); return; }
-        if (globalObj?.open) { globalObj.open(); return; }
+        try {
+          if (globalObj?.render) { globalObj.render(true); return; }
+          if (globalObj?.open) { globalObj.open(); return; }
+        } catch (e) { console.warn('RNK Header | Error opening global object:', e); }
         
         // 5. Sidebar Tab Pattern
-        if (ui.sidebar?.tabs) {
-          const sidebarTab = Object.values(ui.sidebar.tabs).find(t => t.id === button.moduleId || t.options?.id === button.moduleId);
-          if (sidebarTab) { sidebarTab.activate(); return; }
-        }
+        try {
+          if (ui.sidebar?.tabs) {
+            const sidebarTab = Object.values(ui.sidebar.tabs).find(t => t.id === button.moduleId || t.options?.id === button.moduleId);
+            if (sidebarTab) { sidebarTab.activate(); return; }
+          }
+        } catch (e) { console.warn('RNK Header | Error checking sidebar tabs:', e); }
 
         // 6. Scene Control Pattern
-        if (ui.controls?.controls && Array.isArray(ui.controls.controls)) {
-          const control = ui.controls.controls.find(c => c.name === button.moduleId || c.title === mod.title);
-          if (control) {
-              if (control.layer) ui.controls.initialize({layer: control.layer, tool: control.tools[0]?.name});
-              return; 
+        try {
+          if (ui.controls?.controls && Array.isArray(ui.controls.controls)) {
+            const control = ui.controls.controls.find(c => c.name === button.moduleId || c.title === mod.title);
+            if (control) {
+                if (control.layer) ui.controls.initialize({layer: control.layer, tool: control.tools[0]?.name});
+                return; 
+            }
           }
-        }
+        } catch (e) { console.warn('RNK Header | Error checking scene controls:', e); }
 
         // 7. Hidden Header Button Pattern (The "Click the hidden button" trick)
         // If the module added a button to the header that we hid, try to find it and click it.
-        const hiddenButtons = app.element.find('.window-header .rnk-hide-default');
-        let targetButton = null;
-        
-        hiddenButtons.each((i, el) => {
-            const btn = $(el);
-            const title = btn.attr('title') || '';
-            const classes = btn.attr('class') || '';
-            const text = btn.text() || '';
-            
-            // Check for module ID or Title in class or title
-            if (title.toLowerCase().includes(mod.title.toLowerCase()) || 
-                classes.toLowerCase().includes(button.moduleId.toLowerCase()) ||
-                text.toLowerCase().includes(mod.title.toLowerCase())) {
-                targetButton = btn;
-                return false; // break
-            }
-        });
-        
-        if (targetButton) {
-            console.log('RNK Header | Found hidden header button for module, clicking it:', targetButton);
-            targetButton.trigger('click');
-            return;
-        }
+        try {
+          // Ensure we have a jQuery object for the element
+          const $appElement = app.element instanceof $ ? app.element : $(app.element);
+          
+          if ($appElement && $appElement.length) {
+              const hiddenButtons = $appElement.find('.window-header .rnk-hide-default');
+              let targetButton = null;
+              
+              hiddenButtons.each((i, el) => {
+                  const btn = $(el);
+                  const title = btn.attr('title') || '';
+                  const classes = btn.attr('class') || '';
+                  const text = btn.text() || '';
+                  
+                  // Check for module ID or Title in class or title
+                  if (title.toLowerCase().includes(mod.title.toLowerCase()) || 
+                      classes.toLowerCase().includes(button.moduleId.toLowerCase()) ||
+                      text.toLowerCase().includes(mod.title.toLowerCase())) {
+                      targetButton = btn;
+                      return false; // break
+                  }
+              });
+              
+              if (targetButton) {
+                  console.log('RNK Header | Found hidden header button for module, clicking it:', targetButton);
+                  targetButton.trigger('click');
+                  return;
+              }
+          }
+        } catch (e) { console.warn('RNK Header | Error checking hidden buttons:', e); }
 
         // 8. Deep Global Search (Last Resort)
         if (globalObj) {
@@ -397,7 +416,7 @@ export class HeaderInjector {
         break;
       }
       case 'import':
-        if (app.import) {
+        if (typeof app.import === 'function') {
           app.import();
         } else {
           ui.notifications?.warn('No import handler available for this sheet.');
