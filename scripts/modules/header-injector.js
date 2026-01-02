@@ -35,13 +35,18 @@ export class HeaderInjector {
       return;
     }
 
-    // Only inject on actor sheets, and only for player characters
-    const actor = app.actor
-      || (app.document?.documentName === 'Actor' ? app.document : null)
-      || (app.object?.documentName === 'Actor' ? app.object : null);
+    // STRICT CHECK: The document being rendered MUST be an Actor.
+    // This prevents the header from appearing on Item sheets that happen to belong to an Actor.
+    const isActorDoc = (app.document?.documentName === 'Actor') || (app.object?.documentName === 'Actor');
+    if (!isActorDoc) {
+      console.log('RNK Header | Not an Actor document (likely Item or other), skipping:', app.constructor.name);
+      return;
+    }
+
+    const actor = app.actor || app.document || app.object;
 
     if (!actor) {
-      console.log('RNK Header | No actor, skipping for:', app.constructor.name);
+      console.log('RNK Header | No actor found despite document check, skipping:', app.constructor.name);
       return;
     }
 
@@ -300,14 +305,36 @@ export class HeaderInjector {
         break;
       case 'open-module': {
         const mod = button.moduleId ? game.modules.get(button.moduleId) : null;
-        if (mod?.api?.open) {
+        if (!mod) {
+          ui.notifications?.warn(`Module ${button.moduleId || 'unknown'} not found.`);
+          break;
+        }
+
+        // Try various common patterns for opening a module interface
+        if (typeof mod.open === 'function') {
+          mod.open();
+        } else if (mod.api?.open) {
           mod.api.open();
-        } else if (mod?.api?.render) {
+        } else if (mod.api?.render) {
           mod.api.render(true);
-        } else if (mod?.sheet) {
+        } else if (mod.sheet) {
           mod.sheet.render(true);
+        } else if (mod.apps?.[0]?.render) {
+          mod.apps[0].render(true);
+        } else if (mod.public?.open) {
+          mod.public.open();
         } else {
-          ui.notifications?.info(`Module ${mod?.title || button.label || 'module'} is active but has no open handler.`);
+          // Last ditch: check if there's a global object with the module ID (capitalized or not)
+          const globalName = button.moduleId;
+          const globalObj = window[globalName] || window[globalName.charAt(0).toUpperCase() + globalName.slice(1)];
+          if (globalObj?.render) {
+            globalObj.render(true);
+          } else if (globalObj?.open) {
+            globalObj.open();
+          } else {
+            console.warn('RNK Header | No open handler found for module:', mod);
+            ui.notifications?.info(`Module ${mod.title} is active but has no known open handler.`);
+          }
         }
         break;
       }
