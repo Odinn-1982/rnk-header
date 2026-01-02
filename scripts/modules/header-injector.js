@@ -378,14 +378,19 @@ export class HeaderInjector {
               
               hiddenButtons.each((i, el) => {
                   const btn = $(el);
-                  const title = btn.attr('title') || '';
-                  const classes = btn.attr('class') || '';
-                  const text = btn.text() || '';
+                  const title = (btn.attr('title') || '').toLowerCase();
+                  const classes = (btn.attr('class') || '').toLowerCase();
+                  const text = (btn.text() || '').toLowerCase();
+                  const modId = button.moduleId.toLowerCase();
+                  const modTitle = mod.title.toLowerCase();
                   
-                  // Check for module ID or Title in class or title
-                  if (title.toLowerCase().includes(mod.title.toLowerCase()) || 
-                      classes.toLowerCase().includes(button.moduleId.toLowerCase()) ||
-                      text.toLowerCase().includes(mod.title.toLowerCase())) {
+                  // Robust matching:
+                  // 1. Class contains module ID (very common)
+                  // 2. Title contains module title OR module title contains button title (fuzzy match)
+                  // 3. Text contains module title OR module title contains button text
+                  if (classes.includes(modId) || 
+                      (title && (title.includes(modTitle) || modTitle.includes(title))) ||
+                      (text && (text.includes(modTitle) || modTitle.includes(text)))) {
                       targetButton = btn;
                       return false; // break
                   }
@@ -393,11 +398,20 @@ export class HeaderInjector {
               
               if (targetButton) {
                   console.log('RNK Header | Found hidden header button for module, clicking it:', targetButton);
+                  // Try both jQuery click and native click for maximum compatibility
                   targetButton.trigger('click');
+                  if (targetButton[0] && typeof targetButton[0].click === 'function') {
+                      targetButton[0].click();
+                  }
                   return;
               }
           }
         } catch (e) { console.warn('RNK Header | Error checking hidden buttons:', e); }
+
+        // 8. API Function Pattern (Some modules export a function directly as api)
+        try {
+            if (typeof mod.api === 'function') { mod.api(); return; }
+        } catch (e) { console.warn('RNK Header | Error calling module API function:', e); }
 
         // 8. Deep Global Search (Last Resort)
         if (globalObj) {
