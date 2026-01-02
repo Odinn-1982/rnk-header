@@ -35,27 +35,33 @@ export class HeaderInjector {
       return;
     }
 
-    // Get the actor - try multiple paths, but only allow actual Actor documents to avoid items/utility popups
-    const actor = app.actor
-      || (app.document?.documentName === 'Actor' ? app.document : null)
-      || (app.object?.documentName === 'Actor' ? app.object : null);
-    
-    // Skip if not an actor sheet
-    if (!actor) {
-      console.log('RNK Header | No actor, skipping for:', app.constructor.name);
+    // Determine document type: support Actor sheets and Item sheets (embedded or world)
+    const documentName = app.document?.documentName || app.object?.documentName || app.actor?.documentName;
+    let actor = null;
+    let item = null;
+
+    if (documentName === 'Actor') {
+      actor = app.actor
+        || (app.document?.documentName === 'Actor' ? app.document : null)
+        || (app.object?.documentName === 'Actor' ? app.object : null);
+    } else if (documentName === 'Item') {
+      item = app.document?.documentName === 'Item' ? app.document : app.object?.documentName === 'Item' ? app.object : null;
+      // If the item is owned, capture its parent actor for permission checks
+      actor = item?.parent?.documentName === 'Actor' ? item.parent : item?.actor ?? null;
+    }
+
+    // Skip if not an actor or item sheet
+    if (!actor && !item) {
+      console.log('RNK Header | No actor/item, skipping for:', app.constructor.name);
       return;
     }
 
-    // For players: only show on their own character sheet
+    // For players: only show on owned actors; world items are allowed if they can open them
     if (!game.user.isGM) {
-      // Must own the actor (System Agnostic: relies on ownership, not actor.type)
-      if (!actor.isOwner) {
+      if (actor && !actor.isOwner) {
         console.log('RNK Header | Player: does not own this actor, skipping');
         return;
       }
-    } else {
-      // For GM: show on all actor sheets (character AND NPC)
-      // No type filtering - show on everything
     }
 
     // Find the window header - try multiple selectors
@@ -71,7 +77,8 @@ export class HeaderInjector {
       return;
     }
 
-    console.log('RNK Header | SUCCESS! Injecting into:', app.constructor.name, 'Actor:', actor.name, 'with', this.slotManager.MAIN_SLOTS, 'slots');
+    const targetName = actor?.name || item?.name || 'N/A';
+    console.log('RNK Header | SUCCESS! Injecting into:', app.constructor.name, 'Target:', targetName, 'with', this.slotManager.MAIN_SLOTS, 'slots');
     await this.injectCustomHeader(app, header);
   }
 
