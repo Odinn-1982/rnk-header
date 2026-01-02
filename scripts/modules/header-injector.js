@@ -340,14 +340,18 @@ export class HeaderInjector {
         if (globalObj?.open) { globalObj.open(); return; }
         
         // 5. Sidebar Tab Pattern
-        const sidebarTab = Object.values(ui.sidebar.tabs).find(t => t.id === button.moduleId || t.options?.id === button.moduleId);
-        if (sidebarTab) { sidebarTab.activate(); return; }
+        if (ui.sidebar?.tabs) {
+          const sidebarTab = Object.values(ui.sidebar.tabs).find(t => t.id === button.moduleId || t.options?.id === button.moduleId);
+          if (sidebarTab) { sidebarTab.activate(); return; }
+        }
 
         // 6. Scene Control Pattern
-        const control = ui.controls.controls.find(c => c.name === button.moduleId || c.title === mod.title);
-        if (control) {
-            if (control.layer) ui.controls.initialize({layer: control.layer, tool: control.tools[0]?.name});
-            return; 
+        if (ui.controls?.controls) {
+          const control = ui.controls.controls.find(c => c.name === button.moduleId || c.title === mod.title);
+          if (control) {
+              if (control.layer) ui.controls.initialize({layer: control.layer, tool: control.tools[0]?.name});
+              return; 
+          }
         }
 
         // 7. Hidden Header Button Pattern (The "Click the hidden button" trick)
