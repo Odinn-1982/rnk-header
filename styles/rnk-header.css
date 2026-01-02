@@ -158,6 +158,10 @@
   pointer-events: none;
 }
 
+.window-header .rnk-hide-default {
+  display: none !important;
+}
+
 .rnk-custom-header > * {
   pointer-events: auto;
 }

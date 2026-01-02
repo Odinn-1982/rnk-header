@@ -70,6 +70,9 @@ export class HeaderInjector {
       return;
     }
 
+    // Hide default Foundry header controls; RNK header will replace them
+    header.find('.window-actions, .window-controls, .window-buttons, .header-actions').addClass('rnk-hide-default');
+
     const targetName = actor?.name || 'N/A';
     console.log('RNK Header | SUCCESS! Injecting into:', app.constructor.name, 'Target:', targetName, 'with', this.slotManager.MAIN_SLOTS, 'slots');
     await this.injectCustomHeader(app, header);

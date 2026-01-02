@@ -1,6 +1,6 @@
 $exclude = @(".git", ".gitignore", "make-zip.ps1", "*.zip", "*.jpg")
 $moduleName = "rnk-header"
-$version = "1.0.4"
+$version = "1.0.5"
 $zipName = "$moduleName-$version.zip"
 
 Get-ChildItem -Path . -Exclude $exclude | Compress-Archive -DestinationPath $zipName -Force
