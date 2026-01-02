@@ -60,8 +60,8 @@
     { "lang": "lt", "name": "Lietuvių", "path": "lang/lt.json" }
   ],
   "url": "https://github.com/Odinn-1982/rnk-header",
-  "manifest": "https://raw.githubusercontent.com/Odinn-1982/rnk-header/master/module.json",
-  "download": "https://github.com/Odinn-1982/rnk-header/releases/download/v1.0.1/rnk-header-1.0.1.zip",
+  "manifest": "https://raw.githubusercontent.com/Odinn-1982/rnk-header/main/module.json",
+  "download": "https://github.com/Odinn-1982/rnk-header/releases/download/v1.0.2/rnk-header-1.0.2.zip",
   "license": "LICENSE",
   "readme": "README.md",
   "bugs": "https://github.com/Odinn-1982/rnk-header/issues",
