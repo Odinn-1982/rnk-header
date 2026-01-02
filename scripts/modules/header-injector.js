@@ -346,7 +346,7 @@ export class HeaderInjector {
         }
 
         // 6. Scene Control Pattern
-        if (ui.controls?.controls) {
+        if (ui.controls?.controls && Array.isArray(ui.controls.controls)) {
           const control = ui.controls.controls.find(c => c.name === button.moduleId || c.title === mod.title);
           if (control) {
               if (control.layer) ui.controls.initialize({layer: control.layer, tool: control.tools[0]?.name});
