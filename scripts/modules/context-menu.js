@@ -59,30 +59,49 @@ export class ContextMenuHandler {
     const slotsHeader = $('<div class="rnk-context-menu-item" style="font-weight: bold; cursor: default;">Move to Slot</div>');
     menu.append(slotsHeader);
 
-    for (let i = 0; i < this.slotManager.MAIN_SLOTS; i++) {
-      const mainSlot = this.slotManager.getMainSlot(i);
-      
+    // If we know the current slot, only show that main slot and its sub-slots to keep the list tight.
+    const mainIndex = currentSlot?.type === 'sub' ? currentSlot.parentIndex : currentSlot?.index;
+
+    const renderTargets = [];
+    if (Number.isInteger(mainIndex)) {
+      const mainSlot = this.slotManager.getMainSlot(mainIndex);
+      if (mainSlot) {
+        renderTargets.push({ mainSlot, subSlots: mainSlot.subSlots, mainNumber: mainIndex + 1 });
+      }
+    } else {
+      // Fallback: show all slots if we cannot determine the current slot (should be rare)
+      for (let i = 0; i < this.slotManager.MAIN_SLOTS; i++) {
+        renderTargets.push({
+          mainSlot: this.slotManager.getMainSlot(i),
+          subSlots: this.slotManager.getMainSlot(i)?.subSlots || [],
+          mainNumber: i + 1
+        });
+      }
+    }
+
+    for (const target of renderTargets) {
+      if (!target.mainSlot) continue;
+
       const mainSlotItem = this.createMenuItem(
-        `Main Slot ${i + 1}`,
-        mainSlot.button ? 'fas fa-check' : 'fas fa-square',
+        `Main Slot ${target.mainNumber}`,
+        target.mainSlot.button ? 'fas fa-check' : 'fas fa-square',
         () => {
-          this.slotManager.assignButton(mainSlot.id, button);
+          this.slotManager.assignButton(target.mainSlot.id, button);
           this.hide();
-          ui.notifications.info(`${button.label} assigned to Main Slot ${i + 1}`);
+          ui.notifications.info(`${button.label} assigned to Main Slot ${target.mainNumber}`);
         }
       );
       menu.append(mainSlotItem);
 
-      for (let j = 0; j < this.slotManager.SUB_SLOTS_PER_MAIN; j++) {
-        const subSlot = this.slotManager.getSubSlot(i, j);
-        
+      for (let j = 0; j < target.subSlots.length; j++) {
+        const subSlot = target.subSlots[j];
         const subSlotItem = this.createMenuItem(
-          `  Sub Slot ${i + 1}.${j + 1}`,
+          `  Sub Slot ${target.mainNumber}.${j + 1}`,
           subSlot.button ? 'fas fa-check' : 'fas fa-square',
           () => {
             this.slotManager.assignButton(subSlot.id, button);
             this.hide();
-            ui.notifications.info(`${button.label} assigned to Sub Slot ${i + 1}.${j + 1}`);
+            ui.notifications.info(`${button.label} assigned to Sub Slot ${target.mainNumber}.${j + 1}`);
           }
         );
         menu.append(subSlotItem);

@@ -29,6 +29,8 @@ export class GMHub extends FormApplication {
       template: 'modules/rnk-header/templates/gm-hub.html',
       width: 700,
       height: 'auto',
+      resizable: true,
+      scrollY: ['.rnk-gm-hub'],
       closeOnSubmit: false,
       submitOnChange: false,
       tabs: [

@@ -20,6 +20,15 @@
   border-color: #8B4513 !important;
 }
 
+.window#rnk-gm-hub {
+  max-height: 92vh;
+}
+
+.window#rnk-gm-hub .window-content {
+  max-height: calc(92vh - 20px);
+  overflow: auto;
+}
+
 .window#rnk-gm-hub .window-content,
 .app#rnk-gm-hub .window-content {
   background: linear-gradient(to bottom, #0d0d0d, #1a1a1a) !important;

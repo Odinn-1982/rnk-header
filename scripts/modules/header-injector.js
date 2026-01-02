@@ -35,8 +35,10 @@ export class HeaderInjector {
       return;
     }
 
-    // Get the actor - try multiple paths
-    const actor = app.actor || app.object || app.document;
+    // Get the actor - try multiple paths, but only allow actual Actor documents to avoid items/utility popups
+    const actor = app.actor
+      || (app.document?.documentName === 'Actor' ? app.document : null)
+      || (app.object?.documentName === 'Actor' ? app.object : null);
     
     // Skip if not an actor sheet
     if (!actor) {
@@ -291,6 +293,34 @@ export class HeaderInjector {
       case 'sheet':
         if (app.object?.sheet) {
           app.object.sheet.render(true);
+        }
+        break;
+      case 'open-module': {
+        const mod = button.moduleId ? game.modules.get(button.moduleId) : null;
+        if (mod?.api?.open) {
+          mod.api.open();
+        } else if (mod?.api?.render) {
+          mod.api.render(true);
+        } else if (mod?.sheet) {
+          mod.sheet.render(true);
+        } else {
+          ui.notifications?.info(`Module ${mod?.title || button.label || 'module'} is active but has no open handler.`);
+        }
+        break;
+      }
+      case 'import':
+        if (app.import) {
+          app.import();
+        } else {
+          ui.notifications?.warn('No import handler available for this sheet.');
+        }
+        break;
+      case 'open-sidebar':
+        // Sidebar buttons usually include a callback; this is a fallback.
+        if (ui[button.id]?.renderPopout) {
+          ui[button.id].renderPopout();
+        } else {
+          ui.notifications?.warn('Sidebar panel is unavailable.');
         }
         break;
       default:
