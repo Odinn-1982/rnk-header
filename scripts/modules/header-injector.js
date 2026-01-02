@@ -320,32 +320,76 @@ export class HeaderInjector {
           break;
         }
 
-        // Try various common patterns for opening a module interface
-        if (typeof mod.open === 'function') {
-          mod.open();
-        } else if (mod.api?.open) {
-          mod.api.open();
-        } else if (mod.api?.render) {
-          mod.api.render(true);
-        } else if (mod.sheet) {
-          mod.sheet.render(true);
-        } else if (mod.apps?.[0]?.render) {
-          mod.apps[0].render(true);
-        } else if (mod.public?.open) {
-          mod.public.open();
-        } else {
-          // Last ditch: check if there's a global object with the module ID (capitalized or not)
-          const globalName = button.moduleId;
-          const globalObj = window[globalName] || window[globalName.charAt(0).toUpperCase() + globalName.slice(1)];
-          if (globalObj?.render) {
-            globalObj.render(true);
-          } else if (globalObj?.open) {
-            globalObj.open();
-          } else {
-            console.warn('RNK Header | No open handler found for module:', mod);
-            ui.notifications?.info(`Module ${mod.title} is active but has no known open handler.`);
-          }
+        // 1. Standard API patterns
+        if (typeof mod.open === 'function') { mod.open(); return; }
+        if (mod.api?.open) { mod.api.open(); return; }
+        if (mod.api?.render) { mod.api.render(true); return; }
+        if (mod.public?.open) { mod.public.open(); return; }
+        if (mod.public?.render) { mod.public.render(true); return; }
+        
+        // 2. Sheet pattern
+        if (mod.sheet) { mod.sheet.render(true); return; }
+        
+        // 3. Apps array pattern
+        if (mod.apps?.[0]?.render) { mod.apps[0].render(true); return; }
+
+        // 4. Global Object Pattern (ID or Title)
+        const globalName = button.moduleId;
+        const globalObj = window[globalName] || window[globalName.charAt(0).toUpperCase() + globalName.slice(1)];
+        if (globalObj?.render) { globalObj.render(true); return; }
+        if (globalObj?.open) { globalObj.open(); return; }
+        
+        // 5. Sidebar Tab Pattern
+        const sidebarTab = Object.values(ui.sidebar.tabs).find(t => t.id === button.moduleId || t.options?.id === button.moduleId);
+        if (sidebarTab) { sidebarTab.activate(); return; }
+
+        // 6. Scene Control Pattern
+        const control = ui.controls.controls.find(c => c.name === button.moduleId || c.title === mod.title);
+        if (control) {
+            if (control.layer) ui.controls.initialize({layer: control.layer, tool: control.tools[0]?.name});
+            return; 
         }
+
+        // 7. Hidden Header Button Pattern (The "Click the hidden button" trick)
+        // If the module added a button to the header that we hid, try to find it and click it.
+        const hiddenButtons = app.element.find('.window-header .rnk-hide-default');
+        let targetButton = null;
+        
+        hiddenButtons.each((i, el) => {
+            const btn = $(el);
+            const title = btn.attr('title') || '';
+            const classes = btn.attr('class') || '';
+            const text = btn.text() || '';
+            
+            // Check for module ID or Title in class or title
+            if (title.toLowerCase().includes(mod.title.toLowerCase()) || 
+                classes.toLowerCase().includes(button.moduleId.toLowerCase()) ||
+                text.toLowerCase().includes(mod.title.toLowerCase())) {
+                targetButton = btn;
+                return false; // break
+            }
+        });
+        
+        if (targetButton) {
+            console.log('RNK Header | Found hidden header button for module, clicking it:', targetButton);
+            targetButton.trigger('click');
+            return;
+        }
+
+        // 8. Deep Global Search (Last Resort)
+        if (globalObj) {
+             for (const key in globalObj) {
+                 if (globalObj[key]?.render && typeof globalObj[key].render === 'function') {
+                     try {
+                        globalObj[key].render(true);
+                        return;
+                     } catch (e) { console.error(e); }
+                 }
+             }
+        }
+
+        console.warn('RNK Header | No open handler found for module:', mod);
+        ui.notifications?.info(`Module ${mod.title} is active but has no known open handler.`);
         break;
       }
       case 'import':
