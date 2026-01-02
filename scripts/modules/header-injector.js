@@ -76,7 +76,17 @@ export class HeaderInjector {
     }
 
     // Hide default Foundry header controls; RNK header will replace them
-    header.find('.window-actions, .window-controls, .window-buttons, .header-actions').addClass('rnk-hide-default');
+    // We target wrappers AND individual buttons that are not ours
+    const defaultControls = header.find('.window-actions, .window-controls, .window-buttons, .header-actions, .header-button, .close');
+    
+    defaultControls.each((i, el) => {
+      const $el = $(el);
+      // Don't hide our own stuff if it's already there for some reason
+      if ($el.closest('.rnk-custom-header').length) return;
+      if ($el.hasClass('rnk-custom-header')) return;
+      
+      $el.addClass('rnk-hide-default');
+    });
 
     const targetName = actor?.name || 'N/A';
     console.log('RNK Header | SUCCESS! Injecting into:', app.constructor.name, 'Target:', targetName, 'with', this.slotManager.MAIN_SLOTS, 'slots');
