@@ -35,33 +35,26 @@ export class HeaderInjector {
       return;
     }
 
-    // Determine document type: support Actor sheets and Item sheets (embedded or world)
-    const documentName = app.document?.documentName || app.object?.documentName || app.actor?.documentName;
-    let actor = null;
-    let item = null;
+    // Only inject on actor sheets, and only for player characters
+    const actor = app.actor
+      || (app.document?.documentName === 'Actor' ? app.document : null)
+      || (app.object?.documentName === 'Actor' ? app.object : null);
 
-    if (documentName === 'Actor') {
-      actor = app.actor
-        || (app.document?.documentName === 'Actor' ? app.document : null)
-        || (app.object?.documentName === 'Actor' ? app.object : null);
-    } else if (documentName === 'Item') {
-      item = app.document?.documentName === 'Item' ? app.document : app.object?.documentName === 'Item' ? app.object : null;
-      // If the item is owned, capture its parent actor for permission checks
-      actor = item?.parent?.documentName === 'Actor' ? item.parent : item?.actor ?? null;
-    }
-
-    // Skip if not an actor or item sheet
-    if (!actor && !item) {
-      console.log('RNK Header | No actor/item, skipping for:', app.constructor.name);
+    if (!actor) {
+      console.log('RNK Header | No actor, skipping for:', app.constructor.name);
       return;
     }
 
-    // For players: only show on owned actors; world items are allowed if they can open them
-    if (!game.user.isGM) {
-      if (actor && !actor.isOwner) {
-        console.log('RNK Header | Player: does not own this actor, skipping');
-        return;
-      }
+    const allowedTypes = ['character', 'pc'];
+    if (!allowedTypes.includes(actor.type)) {
+      console.log('RNK Header | Non-character actor type, skipping:', actor.type || 'unknown');
+      return;
+    }
+
+    // For players: only show on owned actors
+    if (!game.user.isGM && !actor.isOwner) {
+      console.log('RNK Header | Player: does not own this actor, skipping');
+      return;
     }
 
     // Find the window header - try multiple selectors
@@ -77,7 +70,7 @@ export class HeaderInjector {
       return;
     }
 
-    const targetName = actor?.name || item?.name || 'N/A';
+    const targetName = actor?.name || 'N/A';
     console.log('RNK Header | SUCCESS! Injecting into:', app.constructor.name, 'Target:', targetName, 'with', this.slotManager.MAIN_SLOTS, 'slots');
     await this.injectCustomHeader(app, header);
   }
