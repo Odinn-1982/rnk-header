@@ -1,6 +1,6 @@
 $exclude = @(".git", ".gitignore", "make-zip.ps1", "*.zip", "*.jpg")
 $moduleName = "rnk-header"
-$version = "1.0.31"
+$version = "1.0.32"
 $zipName = "$moduleName-$version.zip"
 
 # Create temp folder structure that Foundry expects

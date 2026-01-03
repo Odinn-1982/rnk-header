@@ -377,50 +377,47 @@ export class HeaderInjector {
             console.warn('RNK Header | Could not find Simple Calendar API');
             break;
           case 'mastercrafted':
-            // Try various API patterns
-            if (window.Mastercrafted?.openManager) { Mastercrafted.openManager(); return; }
-            if (window.mastercrafted?.openManager) { mastercrafted.openManager(); return; }
-            if (game.mastercrafted?.openManager) { game.mastercrafted.openManager(); return; }
-            if (game.modules.get('mastercrafted')?.api?.openManager) {
-              game.modules.get('mastercrafted').api.openManager();
-              return;
-            }
-            // Check for CraftingManager global
-            if (window.CraftingManager?.render) { new CraftingManager().render(true); return; }
-            // Try to find it in ui
-            if (ui.mastercrafted?.render) { ui.mastercrafted.render(true); return; }
-            // Try scene control button
+            // Mastercrafted adds a button with fa-hammer icon to the sheet header
             try {
-              const btn = document.querySelector('[data-tool="craftingManager"], [data-action="openCraftingManager"], [data-tool="mastercrafted"]');
-              if (btn) { btn.click(); return; }
-            } catch (e) {}
-            // Fallback: open module settings
+              const $appElement = app.element instanceof $ ? app.element : $(app.element);
+              const craftingBtn = $appElement.find('.fa-hammer, [class*="hammer"]').closest('a, button, .control-icon');
+              if (craftingBtn.length) {
+                console.log('RNK Header | Found Mastercrafted button, clicking');
+                craftingBtn[0].click();
+                return;
+              }
+            } catch (e) { console.warn('RNK Header | Error finding Mastercrafted button:', e); }
+            // Fallback to settings
             game.settings.sheet.render(true);
-            setTimeout(() => {
-              const filterInput = document.querySelector('.settings-list input[type="search"], #settings-search');
-              if (filterInput) { filterInput.value = 'mastercrafted'; filterInput.dispatchEvent(new Event('input')); }
-            }, 300);
             return;
           case 'skill-tree':
-            if (window.SkillTree?.open) { SkillTree.open(); return; }
-            if (window.skillTree?.open) { skillTree.open(); return; }
-            if (game.skillTree?.open) { game.skillTree.open(); return; }
-            if (game.modules.get('skill-tree')?.api?.open) {
-              game.modules.get('skill-tree').api.open();
-              return;
-            }
-            // Try opening via actor
+            // Skill Tree adds a button with fa-code-branch icon to the sheet header
             try {
-              const actor = app.actor || app.document || app.object;
-              if (actor) {
-                if (window.SkillTree?.openForActor) { SkillTree.openForActor(actor); return; }
-                if (game.modules.get('skill-tree')?.api?.openForActor) { 
-                  game.modules.get('skill-tree').api.openForActor(actor); 
-                  return; 
-                }
+              const $appElement = app.element instanceof $ ? app.element : $(app.element);
+              const skillTreeBtn = $appElement.find('.fa-code-branch, [class*="code-branch"]').closest('a, button, .control-icon');
+              if (skillTreeBtn.length) {
+                console.log('RNK Header | Found Skill Tree button, clicking');
+                skillTreeBtn[0].click();
+                return;
               }
-            } catch (e) {}
-            break;
+            } catch (e) { console.warn('RNK Header | Error finding Skill Tree button:', e); }
+            // Fallback to settings
+            game.settings.sheet.render(true);
+            return;
+          case 'fvtt-paper-doll-ui':
+            // Paper Doll adds a button with fa-person or fa-duotone fa-person icon
+            try {
+              const $appElement = app.element instanceof $ ? app.element : $(app.element);
+              const paperDollBtn = $appElement.find('.fa-person, [class*="fa-person"]').closest('a, button, .control-icon');
+              if (paperDollBtn.length) {
+                console.log('RNK Header | Found Paper Doll button, clicking');
+                paperDollBtn[0].click();
+                return;
+              }
+            } catch (e) { console.warn('RNK Header | Error finding Paper Doll button:', e); }
+            // Fallback to settings
+            game.settings.sheet.render(true);
+            return;
           case 'monks-active-tiles':
             if (game.settings) {
               game.settings.sheet.render(true, { filter: 'monks-active-tiles' });
