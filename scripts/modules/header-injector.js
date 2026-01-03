@@ -319,6 +319,9 @@ export class HeaderInjector {
           ui.notifications?.warn(`Module ${button.moduleId || 'unknown'} not found.`);
           break;
         }
+        
+        // Debug: Log the actual module ID
+        console.log('RNK Header | Attempting to open module:', button.moduleId, 'Title:', mod.title);
 
         // 0. Custom handlers for specific modules
         switch (button.moduleId) {
