@@ -77,8 +77,14 @@ export class ModuleDetector {
       'dice-so-nice'
     ];
     
-    // Add active modules as buttons
-    const activeModules = game.modules.filter(m => m.active);
+    // Add active modules as buttons - use forEach for Collection compatibility
+    const activeModules = [];
+    game.modules.forEach((module, key) => {
+      if (module.active) {
+        activeModules.push(module);
+      }
+    });
+    
     for (const module of activeModules) {
       const isManuallyAdded = manualModules.includes(module.id);
       const isBlacklisted = moduleBlacklist.includes(module.id) && !isManuallyAdded;
