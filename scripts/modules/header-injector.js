@@ -341,25 +341,30 @@ export class HeaderInjector {
             }
             break;
           case 'mastercrafted':
-            if (window.Mastercrafted?.openManager) {
-              Mastercrafted.openManager();
-              return;
-            } else if (window.mastercrafted?.openManager) {
-              mastercrafted.openManager();
-              return;
-            } else if (game.mastercrafted?.openManager) {
-              game.mastercrafted.openManager();
-              return;
-            } else if (game.modules.get('mastercrafted')?.api?.openManager) {
+            // Try various API patterns
+            if (window.Mastercrafted?.openManager) { Mastercrafted.openManager(); return; }
+            if (window.mastercrafted?.openManager) { mastercrafted.openManager(); return; }
+            if (game.mastercrafted?.openManager) { game.mastercrafted.openManager(); return; }
+            if (game.modules.get('mastercrafted')?.api?.openManager) {
               game.modules.get('mastercrafted').api.openManager();
               return;
             }
+            // Check for CraftingManager global
+            if (window.CraftingManager?.render) { new CraftingManager().render(true); return; }
+            // Try to find it in ui
+            if (ui.mastercrafted?.render) { ui.mastercrafted.render(true); return; }
             // Try scene control button
             try {
-              const btn = document.querySelector('[data-tool="craftingManager"], [data-action="openCraftingManager"]');
+              const btn = document.querySelector('[data-tool="craftingManager"], [data-action="openCraftingManager"], [data-tool="mastercrafted"]');
               if (btn) { btn.click(); return; }
             } catch (e) {}
-            break;
+            // Fallback: open module settings
+            game.settings.sheet.render(true);
+            setTimeout(() => {
+              const filterInput = document.querySelector('.settings-list input[type="search"], #settings-search');
+              if (filterInput) { filterInput.value = 'mastercrafted'; filterInput.dispatchEvent(new Event('input')); }
+            }, 300);
+            return;
           case 'skill-tree':
             if (window.SkillTree?.open) { SkillTree.open(); return; }
             if (window.skillTree?.open) { skillTree.open(); return; }
@@ -487,7 +492,7 @@ export class HeaderInjector {
             if (typeof mod.api === 'function') { mod.api(); return; }
         } catch (e) { console.warn('RNK Header | Error calling module API function:', e); }
 
-        // 8. Deep Global Search (Last Resort)
+        // 9. Deep Global Search (Last Resort)
         if (globalObj) {
              for (const key in globalObj) {
                  if (globalObj[key]?.render && typeof globalObj[key].render === 'function') {
@@ -499,14 +504,16 @@ export class HeaderInjector {
              }
         }
 
-        // Check if this was manually added
-        const isManuallyAdded = button.manuallyAdded;
-        if (isManuallyAdded) {
-          console.warn('RNK Header | Manually added module has no open handler:', mod.title);
-          ui.notifications?.warn(`${mod.title} doesn't have a UI window. Check the module's documentation for how to use it.`);
-        } else {
-          console.warn('RNK Header | No open handler found for module:', mod.title);
-        }
+        // 10. Final Fallback: Open module settings
+        console.warn('RNK Header | No open handler found for module:', mod.title, '- Opening settings');
+        game.settings.sheet.render(true);
+        setTimeout(() => {
+          const filterInput = document.querySelector('.settings-list input[type="search"], #settings-search, input[name="filter"]');
+          if (filterInput) { 
+            filterInput.value = button.moduleId; 
+            filterInput.dispatchEvent(new Event('input', { bubbles: true })); 
+          }
+        }, 300);
         break;
       }
       case 'import':
