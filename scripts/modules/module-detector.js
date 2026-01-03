@@ -92,21 +92,22 @@ export class ModuleDetector {
       // Skip if blacklisted and not manually added
       if (isBlacklisted) continue;
       
-      // Add if manually added OR has open handler
-      if (isManuallyAdded || this.hasOpenHandler(module)) {
-        this.detectedButtons.push({
-          id: `module-${module.id}`,
-          label: module.title,
-          icon: 'fas fa-puzzle-piece',
-          action: 'open-module',
-          type: 'module',
-          moduleId: module.id,
-          manuallyAdded: isManuallyAdded,
-          callback: (app) => {
-            ui.notifications.info(`Opening ${module.title}`);
-          }
-        });
-      }
+      // Skip rnk-header itself
+      if (module.id === 'rnk-header') continue;
+      
+      // Add all active modules (not just ones with open handlers)
+      this.detectedButtons.push({
+        id: `module-${module.id}`,
+        label: module.title,
+        icon: 'fas fa-puzzle-piece',
+        action: 'open-module',
+        type: 'module',
+        moduleId: module.id,
+        manuallyAdded: isManuallyAdded,
+        callback: (app) => {
+          ui.notifications.info(`Opening ${module.title}`);
+        }
+      });
     }
     
     // Add sidebar tabs
