@@ -103,10 +103,8 @@ export class ModuleDetector {
         action: 'open-module',
         type: 'module',
         moduleId: module.id,
-        manuallyAdded: isManuallyAdded,
-        callback: (app) => {
-          ui.notifications.info(`Opening ${module.title}`);
-        }
+        manuallyAdded: isManuallyAdded
+        // No callback - let the header-injector handle open-module action
       });
     }
     
