@@ -327,17 +327,16 @@ export class HeaderInjector {
         switch (button.moduleId) {
           case 'item-piles':
             if (game.itempiles?.API) {
-              // Open Item Piles settings or show available actions
               game.settings.sheet.render(true, { filter: 'item-piles' });
               return;
             }
             break;
-          case 'simple-calendar':
-            if (window.SimpleCalendar?.api) {
+          case 'foundryvtt-simple-calendar':
+            if (window.SimpleCalendar?.api?.showCalendar) {
               SimpleCalendar.api.showCalendar();
               return;
-            } else if (game.modules.get('simple-calendar')?.api?.showCalendar) {
-              game.modules.get('simple-calendar').api.showCalendar();
+            } else if (game.modules.get('foundryvtt-simple-calendar')?.api?.showCalendar) {
+              game.modules.get('foundryvtt-simple-calendar').api.showCalendar();
               return;
             }
             break;
@@ -351,27 +350,24 @@ export class HeaderInjector {
             } else if (game.mastercrafted?.openManager) {
               game.mastercrafted.openManager();
               return;
+            } else if (game.modules.get('mastercrafted')?.api?.openManager) {
+              game.modules.get('mastercrafted').api.openManager();
+              return;
             }
-            // Try to find the crafting button in scene controls
+            // Try scene control button
             try {
-              const craftingControl = ui.controls?.controls?.find(c => c.name === 'mastercrafted' || c.tools?.some(t => t.name === 'crafting'));
-              if (craftingControl) {
-                const tool = craftingControl.tools?.find(t => t.onClick);
-                if (tool?.onClick) { tool.onClick(); return; }
-              }
+              const btn = document.querySelector('[data-tool="craftingManager"], [data-action="openCraftingManager"]');
+              if (btn) { btn.click(); return; }
             } catch (e) {}
             break;
-          case 'pf2e-crafting':
-          case 'crafting-manager':
-            // Generic crafting module patterns
-            if (window.CraftingManager?.open) { CraftingManager.open(); return; }
-            if (game.pf2eCrafting?.open) { game.pf2eCrafting.open(); return; }
-            break;
           case 'skill-tree':
-          case 'pf2e-skill-tree':
             if (window.SkillTree?.open) { SkillTree.open(); return; }
             if (window.skillTree?.open) { skillTree.open(); return; }
             if (game.skillTree?.open) { game.skillTree.open(); return; }
+            if (game.modules.get('skill-tree')?.api?.open) {
+              game.modules.get('skill-tree').api.open();
+              return;
+            }
             // Try opening via actor
             try {
               const actor = app.actor || app.document || app.object;
