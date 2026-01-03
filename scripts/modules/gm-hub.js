@@ -107,15 +107,45 @@ export class GMHub extends FormApplication {
     
     console.log('RNK Header | GMHub getData called');
     data.slots = this.slotManager.config.slots;
-    data.availableButtons = this.moduleDetector.getAllButtons();
+    data.availableButtons = this.getAllAvailableButtons();
     data.users = game.users.filter(u => !u.isGM);
     data.slotVisibility = this.permissionManager.getSlotVisibility();
     data.psychedelic = game.settings.get('rnk-header', 'psychedelicBackground');
     
     console.log('RNK Header | Slots:', data.slots);
-    console.log('RNK Header | Available Buttons:', data.availableButtons);
+    console.log('RNK Header | Available Buttons:', data.availableButtons.length);
     
     return data;
+  }
+
+  getAllAvailableButtons() {
+    const buttons = [...this.moduleDetector.getAllButtons()];
+    
+    // Add all macros
+    for (const macro of game.macros) {
+      buttons.push({
+        id: `macro-${macro.id}`,
+        label: `Macro: ${macro.name}`,
+        icon: 'fas fa-terminal',
+        action: 'run-macro',
+        type: 'macro',
+        uuid: macro.uuid
+      });
+    }
+    
+    // Add all items from world
+    for (const item of game.items) {
+      buttons.push({
+        id: `item-${item.id}`,
+        label: `Item: ${item.name}`,
+        icon: item.img || 'icons/svg/item-bag.svg',
+        action: 'open-item',
+        type: 'item',
+        uuid: item.uuid
+      });
+    }
+    
+    return buttons;
   }
 
   activateListeners(html) {

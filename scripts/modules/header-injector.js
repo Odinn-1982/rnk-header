@@ -479,6 +479,26 @@ export class HeaderInjector {
           ui.notifications?.warn('Sidebar panel is unavailable.');
         }
         break;
+      case 'run-macro':
+        if (button.uuid) {
+          const macro = fromUuidSync(button.uuid);
+          if (macro) {
+            macro.execute();
+          } else {
+            ui.notifications?.warn('Macro not found.');
+          }
+        }
+        break;
+      case 'open-item':
+        if (button.uuid) {
+          const item = fromUuidSync(button.uuid);
+          if (item) {
+            item.sheet.render(true);
+          } else {
+            ui.notifications?.warn('Item not found.');
+          }
+        }
+        break;
       default:
         console.warn('RNK Header | Unknown action:', button.action);
     }

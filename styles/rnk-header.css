@@ -166,6 +166,10 @@
   pointer-events: auto;
 }
 
+.rnk-header-button {
+  pointer-events: auto;
+}
+
 .rnk-header-slot {
   display: inline-flex;
   align-items: center;
