@@ -330,10 +330,56 @@ export class HeaderInjector {
             }
             break;
           case 'simple-calendar':
-            if (window.SimpleCalendar) {
+            if (window.SimpleCalendar?.api) {
               SimpleCalendar.api.showCalendar();
               return;
+            } else if (game.modules.get('simple-calendar')?.api?.showCalendar) {
+              game.modules.get('simple-calendar').api.showCalendar();
+              return;
             }
+            break;
+          case 'mastercrafted':
+            if (window.Mastercrafted?.openManager) {
+              Mastercrafted.openManager();
+              return;
+            } else if (window.mastercrafted?.openManager) {
+              mastercrafted.openManager();
+              return;
+            } else if (game.mastercrafted?.openManager) {
+              game.mastercrafted.openManager();
+              return;
+            }
+            // Try to find the crafting button in scene controls
+            try {
+              const craftingControl = ui.controls?.controls?.find(c => c.name === 'mastercrafted' || c.tools?.some(t => t.name === 'crafting'));
+              if (craftingControl) {
+                const tool = craftingControl.tools?.find(t => t.onClick);
+                if (tool?.onClick) { tool.onClick(); return; }
+              }
+            } catch (e) {}
+            break;
+          case 'pf2e-crafting':
+          case 'crafting-manager':
+            // Generic crafting module patterns
+            if (window.CraftingManager?.open) { CraftingManager.open(); return; }
+            if (game.pf2eCrafting?.open) { game.pf2eCrafting.open(); return; }
+            break;
+          case 'skill-tree':
+          case 'pf2e-skill-tree':
+            if (window.SkillTree?.open) { SkillTree.open(); return; }
+            if (window.skillTree?.open) { skillTree.open(); return; }
+            if (game.skillTree?.open) { game.skillTree.open(); return; }
+            // Try opening via actor
+            try {
+              const actor = app.actor || app.document || app.object;
+              if (actor) {
+                if (window.SkillTree?.openForActor) { SkillTree.openForActor(actor); return; }
+                if (game.modules.get('skill-tree')?.api?.openForActor) { 
+                  game.modules.get('skill-tree').api.openForActor(actor); 
+                  return; 
+                }
+              }
+            } catch (e) {}
             break;
           case 'monks-active-tiles':
             if (game.settings) {
