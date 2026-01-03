@@ -7,22 +7,22 @@ export class HeaderInjector {
 
   async onRenderApplication(app, html, data) {
     console.log('RNK Header | Hook fired for:', app.constructor.name, 'Actor:', app.actor?.name || app.object?.name || 'N/A');
-    
+
     if (!game.user) {
       console.log('RNK Header | No game.user, skipping');
       return;
     }
-    
+
     // For v2 apps, html might be the app itself, not a jQuery object
     if (!html) {
       console.log('RNK Header | No html passed to render hook');
       return;
     }
-    
+
     if (!html.jquery) {
       html = $(html);
     }
-    
+
     const isSceneControls = app.constructor?.name === 'SceneControls' || html.hasClass('scene-controls') || app?.id === 'sceneControls';
     if (isSceneControls) {
       console.log('RNK Header | Skipping scene controls');
@@ -65,11 +65,11 @@ export class HeaderInjector {
     // Find the window header - try multiple selectors
     let header = null;
     const maybeWindow = app.element?.length ? (app.element.jquery ? app.element : $(app.element)) : html.closest('.app.window-app, .window-app, .app, [role="dialog"]');
-    
+
     if (maybeWindow.length) {
       header = maybeWindow.find('.window-header');
     }
-    
+
     if (!header || !header.length) {
       console.log('RNK Header | Could not find header element for:', app.constructor.name);
       return;
@@ -78,13 +78,13 @@ export class HeaderInjector {
     // Hide default Foundry header controls; RNK header will replace them
     // We target wrappers AND individual buttons that are not ours
     const defaultControls = header.find('.window-actions, .window-controls, .window-buttons, .header-actions, .header-button, .close');
-    
+
     defaultControls.each((i, el) => {
       const $el = $(el);
       // Don't hide our own stuff if it's already there for some reason
       if ($el.closest('.rnk-custom-header').length) return;
       if ($el.hasClass('rnk-custom-header')) return;
-      
+
       $el.addClass('rnk-hide-default');
     });
 
@@ -99,7 +99,7 @@ export class HeaderInjector {
 
     const rnkHeader = $('<div class="rnk-custom-header"></div>');
     const slotsContainer = $('<div style="display: flex; align-items: center; gap: 8px;"></div>');
-    
+
     // Add a permanent close button variable
     let closeButton = null;
     if (game.settings.get('rnk-header', 'showCloseButton')) {
@@ -118,7 +118,7 @@ export class HeaderInjector {
     // Create main slot elements
     for (let i = 0; i < this.slotManager.MAIN_SLOTS; i++) {
       const mainSlot = this.slotManager.getMainSlot(i);
-      
+
       // Skip if slot is hidden globally
       if (mainSlot.hidden) continue;
 
@@ -159,7 +159,7 @@ export class HeaderInjector {
     // Always show a slot - blank if no button assigned
     if (mainSlot.button) {
       const hasSubButtons = mainSlot.subSlots.some(sub => sub.button);
-      
+
       if (hasSubButtons) {
         const dropdown = this.createDropdownElement(app, mainSlot);
         container.append(dropdown);
@@ -174,7 +174,7 @@ export class HeaderInjector {
           <i class="far fa-circle"></i>
         </a>
       `);
-      
+
       // GM can right-click blank slots to assign
       if (game.user.isGM) {
         blankSlot.on('contextmenu', (event) => {
@@ -183,7 +183,7 @@ export class HeaderInjector {
           this.handleBlankSlotRightClick(mainSlot, event);
         });
       }
-      
+
       container.append(blankSlot);
     }
 
@@ -192,29 +192,29 @@ export class HeaderInjector {
 
   createDropdownElement(app, mainSlot) {
     const dropdown = $('<div class="rnk-header-dropdown"></div>');
-    
+
     const mainButton = this.createButtonElement(app, mainSlot.button);
     mainButton.on('click', (event) => {
       event.stopPropagation();
       dropdown.toggleClass('active');
       $('.rnk-header-dropdown').not(dropdown).removeClass('active');
     });
-    
+
     dropdown.append(mainButton);
-    
+
     const dropdownContent = $('<div class="rnk-header-dropdown-content"></div>');
-    
+
     for (const subSlot of mainSlot.subSlots) {
       if (subSlot.button) {
         if (!this.permissionManager.canUserSee(game.user.id, subSlot.button.id)) continue;
-        
+
         const subItem = this.createDropdownItemElement(app, subSlot.button);
         dropdownContent.append(subItem);
       }
     }
-    
+
     dropdown.append(dropdownContent);
-    
+
     return dropdown;
   }
 
@@ -320,6 +320,35 @@ export class HeaderInjector {
           break;
         }
 
+        // 0. Custom handlers for specific modules
+        switch (button.moduleId) {
+          case 'item-piles':
+            if (game.itempiles?.API) {
+              // Open Item Piles settings or show available actions
+              game.settings.sheet.render(true, { filter: 'item-piles' });
+              return;
+            }
+            break;
+          case 'simple-calendar':
+            if (window.SimpleCalendar) {
+              SimpleCalendar.api.showCalendar();
+              return;
+            }
+            break;
+          case 'monks-active-tiles':
+            if (game.settings) {
+              game.settings.sheet.render(true, { filter: 'monks-active-tiles' });
+              return;
+            }
+            break;
+          case 'dice-so-nice':
+            if (game.dice3d) {
+              game.settings.sheet.render(true, { filter: 'dice-so-nice' });
+              return;
+            }
+            break;
+        }
+
         // 1. Standard API patterns
         try {
           if (typeof mod.open === 'function') { mod.open(); return; }
@@ -328,12 +357,12 @@ export class HeaderInjector {
           if (mod.public?.open) { mod.public.open(); return; }
           if (mod.public?.render) { mod.public.render(true); return; }
         } catch (e) { console.warn('RNK Header | Error in standard API open:', e); }
-        
+
         // 2. Sheet pattern
         try {
           if (mod.sheet) { mod.sheet.render(true); return; }
         } catch (e) { console.warn('RNK Header | Error opening module sheet:', e); }
-        
+
         // 3. Apps array pattern
         try {
           if (mod.apps?.[0]?.render) { mod.apps[0].render(true); return; }
@@ -346,7 +375,7 @@ export class HeaderInjector {
           if (globalObj?.render) { globalObj.render(true); return; }
           if (globalObj?.open) { globalObj.open(); return; }
         } catch (e) { console.warn('RNK Header | Error opening global object:', e); }
-        
+
         // 5. Sidebar Tab Pattern
         try {
           if (ui.sidebar?.tabs) {
@@ -361,7 +390,7 @@ export class HeaderInjector {
             const control = ui.controls.controls.find(c => c.name === button.moduleId || c.title === mod.title);
             if (control) {
                 if (control.layer) ui.controls.initialize({layer: control.layer, tool: control.tools[0]?.name});
-                return; 
+                return;
             }
           }
         } catch (e) { console.warn('RNK Header | Error checking scene controls:', e); }
@@ -371,11 +400,11 @@ export class HeaderInjector {
         try {
           // Ensure we have a jQuery object for the element
           const $appElement = app.element instanceof $ ? app.element : $(app.element);
-          
+
           if ($appElement && $appElement.length) {
               const hiddenButtons = $appElement.find('.window-header .rnk-hide-default');
               let targetButton = null;
-              
+
               hiddenButtons.each((i, el) => {
                   const btn = $(el);
                   const title = (btn.attr('title') || '').toLowerCase();
@@ -383,19 +412,19 @@ export class HeaderInjector {
                   const text = (btn.text() || '').toLowerCase();
                   const modId = button.moduleId.toLowerCase();
                   const modTitle = mod.title.toLowerCase();
-                  
+
                   // Robust matching:
                   // 1. Class contains module ID (very common)
                   // 2. Title contains module title OR module title contains button title (fuzzy match)
                   // 3. Text contains module title OR module title contains button text
-                  if (classes.includes(modId) || 
+                  if (classes.includes(modId) ||
                       (title && (title.includes(modTitle) || modTitle.includes(title))) ||
                       (text && (text.includes(modTitle) || modTitle.includes(text)))) {
                       targetButton = btn;
                       return false; // break
                   }
               });
-              
+
               if (targetButton) {
                   console.log('RNK Header | Found hidden header button for module, clicking it:', targetButton);
                   // Try both jQuery click and native click for maximum compatibility
@@ -425,8 +454,14 @@ export class HeaderInjector {
              }
         }
 
-        console.warn('RNK Header | No open handler found for module:', mod);
-        ui.notifications?.info(`Module ${mod.title} is active but has no known open handler.`);
+        // Check if this was manually added
+        const isManuallyAdded = button.manuallyAdded;
+        if (isManuallyAdded) {
+          console.warn('RNK Header | Manually added module has no open handler:', mod.title);
+          ui.notifications?.warn(`${mod.title} doesn't have a UI window. Check the module's documentation for how to use it.`);
+        } else {
+          console.warn('RNK Header | No open handler found for module:', mod.title);
+        }
         break;
       }
       case 'import':
@@ -459,7 +494,7 @@ export class HeaderInjector {
     // TODO: Show context menu for blank slot assignment
     // For now, just log it
     console.log('RNK Header | Right-clicked blank slot:', slot.id);
-    
+
     // Could open GM Hub automatically
     if (window.RNKHeader?.gmHub) {
       window.RNKHeader.gmHub.render(true);

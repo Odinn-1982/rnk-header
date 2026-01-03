@@ -102,6 +102,20 @@ class RNKHeader {
       type: Object,
       default: null
     });
+
+    game.settings.register('rnk-header', 'manualModules', {
+      name: 'Manually Added Modules',
+      hint: 'Comma-separated list of module IDs to always show as buttons (e.g., "item-piles,simple-calendar")',
+      scope: 'world',
+      config: true,
+      type: String,
+      default: '',
+      onChange: async () => {
+        if (window.RNKHeader?.moduleDetector) {
+          await window.RNKHeader.moduleDetector.detectModuleButtons();
+        }
+      }
+    });
   }
 
   registerHooks() {

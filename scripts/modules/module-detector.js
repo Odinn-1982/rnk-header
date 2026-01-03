@@ -59,20 +59,48 @@ export class ModuleDetector {
   async detectModuleButtons() {
     this.detectedButtons = [...this.standardButtons];
     
-    // Add all active modules as buttons
+    // Get manually added modules from settings
+    const manualModulesSetting = game.settings.get('rnk-header', 'manualModules') || '';
+    const manualModules = manualModulesSetting.split(',').map(id => id.trim()).filter(id => id);
+    
+    // Modules that should not appear as buttons (no UI to open) unless manually added
+    const moduleBlacklist = [
+      'item-piles',
+      'simple-calendar',
+      '_chatcommands',
+      'lib-wrapper',
+      'socketlib',
+      'pf2e-graphics',
+      'pf2e-dailies',
+      'times-up',
+      'polyglot',
+      'dice-so-nice'
+    ];
+    
+    // Add active modules as buttons
     const activeModules = game.modules.filter(m => m.active);
     for (const module of activeModules) {
-      this.detectedButtons.push({
-        id: `module-${module.id}`,
-        label: module.title,
-        icon: 'fas fa-puzzle-piece',
-        action: 'open-module',
-        type: 'module',
-        moduleId: module.id,
-        callback: (app) => {
-          ui.notifications.info(`Opening ${module.title}`);
-        }
-      });
+      const isManuallyAdded = manualModules.includes(module.id);
+      const isBlacklisted = moduleBlacklist.includes(module.id) && !isManuallyAdded;
+      
+      // Skip if blacklisted and not manually added
+      if (isBlacklisted) continue;
+      
+      // Add if manually added OR has open handler
+      if (isManuallyAdded || this.hasOpenHandler(module)) {
+        this.detectedButtons.push({
+          id: `module-${module.id}`,
+          label: module.title,
+          icon: 'fas fa-puzzle-piece',
+          action: 'open-module',
+          type: 'module',
+          moduleId: module.id,
+          manuallyAdded: isManuallyAdded,
+          callback: (app) => {
+            ui.notifications.info(`Opening ${module.title}`);
+          }
+        });
+      }
     }
     
     // Add sidebar tabs
@@ -107,6 +135,25 @@ export class ModuleDetector {
         callback: tab.callback
       });
     }
+  }
+
+  hasOpenHandler(module) {
+    // Check if module has any standard open method
+    if (typeof module.open === 'function') return true;
+    if (module.api?.open || module.api?.render) return true;
+    if (module.public?.open || module.public?.render) return true;
+    if (module.sheet?.render) return true;
+    if (module.apps?.[0]?.render) return true;
+    
+    // Check global objects
+    const globalName = module.id;
+    const globalObj = window[globalName] || window[globalName.charAt(0).toUpperCase() + globalName.slice(1)];
+    if (globalObj?.render || globalObj?.open) return true;
+    
+    // Check if module adds custom header buttons
+    if (module.api?.headerButtons || window[module.id]?.headerButtons) return true;
+    
+    return false;
   }
 
   extractModuleButtons(module) {
