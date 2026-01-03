@@ -332,13 +332,49 @@ export class HeaderInjector {
             }
             break;
           case 'foundryvtt-simple-calendar':
+            console.log('RNK Header | Simple Calendar handler - checking APIs...');
+            console.log('RNK Header | window.SimpleCalendar:', window.SimpleCalendar);
+            console.log('RNK Header | SimpleCalendar.api:', window.SimpleCalendar?.api);
+            
+            // Try multiple patterns
             if (window.SimpleCalendar?.api?.showCalendar) {
+              console.log('RNK Header | Using SimpleCalendar.api.showCalendar()');
               SimpleCalendar.api.showCalendar();
               return;
-            } else if (game.modules.get('foundryvtt-simple-calendar')?.api?.showCalendar) {
-              game.modules.get('foundryvtt-simple-calendar').api.showCalendar();
+            }
+            if (window.SimpleCalendar?.show) {
+              console.log('RNK Header | Using SimpleCalendar.show()');
+              SimpleCalendar.show();
               return;
             }
+            if (window.SimpleCalendar?.open) {
+              console.log('RNK Header | Using SimpleCalendar.open()');
+              SimpleCalendar.open();
+              return;
+            }
+            // Try the module API
+            const scMod = game.modules.get('foundryvtt-simple-calendar');
+            if (scMod?.api?.showCalendar) {
+              console.log('RNK Header | Using module.api.showCalendar()');
+              scMod.api.showCalendar();
+              return;
+            }
+            // Try clicking the calendar button in the UI
+            try {
+              const calBtn = document.querySelector('[data-tool="calendar"], .simple-calendar-btn, #simple-calendar-btn, [title*="Calendar"]');
+              if (calBtn) {
+                console.log('RNK Header | Clicking calendar button');
+                calBtn.click();
+                return;
+              }
+            } catch (e) {}
+            // Try globalThis
+            if (globalThis.SimpleCalendar?.api?.showCalendar) {
+              console.log('RNK Header | Using globalThis.SimpleCalendar');
+              globalThis.SimpleCalendar.api.showCalendar();
+              return;
+            }
+            console.warn('RNK Header | Could not find Simple Calendar API');
             break;
           case 'mastercrafted':
             // Try various API patterns
